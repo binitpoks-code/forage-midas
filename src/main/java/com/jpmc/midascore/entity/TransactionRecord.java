@@ -14,14 +14,16 @@ public class TransactionRecord {
     private long senderId;
     private long recipientId;
     private float amount;
+    private float incentiveAmount;
 
     protected TransactionRecord() {
     }
 
-    public TransactionRecord(long senderId, long recipientId, float amount) {
+    public TransactionRecord(long senderId, long recipientId, float amount, float incentiveAmount) {
         this.senderId = senderId;
         this.recipientId = recipientId;
         this.amount = amount;
+        this.incentiveAmount = incentiveAmount;
     }
 
     public long getId() {
@@ -38,5 +40,9 @@ public class TransactionRecord {
 
     public float getAmount() {
         return amount;
+    }
+
+    public float getIncentiveAmount() {
+        return incentiveAmount;
     }
 }

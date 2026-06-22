@@ -16,10 +16,14 @@ public class TransactionService {
 
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
+    private final IncentiveClient incentiveClient;
 
-    public TransactionService(UserRepository userRepository, TransactionRepository transactionRepository) {
+    public TransactionService(UserRepository userRepository,
+                              TransactionRepository transactionRepository,
+                              IncentiveClient incentiveClient) {
         this.userRepository = userRepository;
         this.transactionRepository = transactionRepository;
+        this.incentiveClient = incentiveClient;
     }
 
     @Transactional
@@ -32,16 +36,19 @@ public class TransactionService {
 
         if (sender.getBalance() < transaction.getAmount()) return;
 
+        float incentive = incentiveClient.getIncentive(transaction);
+
         sender.setBalance(sender.getBalance() - transaction.getAmount());
-        recipient.setBalance(recipient.getBalance() + transaction.getAmount());
+        recipient.setBalance(recipient.getBalance() + transaction.getAmount() + incentive);
 
         userRepository.save(sender);
         userRepository.save(recipient);
         transactionRepository.save(new TransactionRecord(
-                transaction.getSenderId(), transaction.getRecipientId(), transaction.getAmount()));
+                transaction.getSenderId(), transaction.getRecipientId(),
+                transaction.getAmount(), incentive));
 
-        logger.info("Processed {} -> {} amount={} | {}: {} | {}: {}",
-                sender.getName(), recipient.getName(), transaction.getAmount(),
+        logger.info("Processed {} -> {} amount={} incentive={} | {}: {} | {}: {}",
+                sender.getName(), recipient.getName(), transaction.getAmount(), incentive,
                 sender.getName(), sender.getBalance(),
                 recipient.getName(), recipient.getBalance());
     }
